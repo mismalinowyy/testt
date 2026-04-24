@@ -1,0 +1,263 @@
+# testt
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz 40 pytań</title>
+
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0f172a;color:#fff;display:flex;justify-content:center}
+.app{max-width:760px;width:100%;padding:20px}
+.card{background:#1e293b;border-radius:16px;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+h3{margin-top:0}
+.option{
+  background:#334155;
+  margin:8px 0;
+  padding:12px;
+  border-radius:12px;
+  cursor:pointer;
+  transition:.15s;
+}
+.option:hover{background:#475569}
+.option.active{outline:2px solid #3b82f6}
+.option.correct{background:#16a34a!important}
+.option.wrong{background:#dc2626!important}
+
+.top{display:flex;justify-content:space-between;margin-bottom:10px;font-size:14px;color:#cbd5f5}
+.progress{height:8px;background:#334155;border-radius:10px;margin-bottom:15px}
+.bar{height:100%;background:#3b82f6;border-radius:10px;width:0%}
+
+button{margin:5px;padding:10px 14px;border:none;border-radius:10px;background:#3b82f6;color:#fff;cursor:pointer}
+.secondary{background:#475569}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+<div class="top">
+  <div id="progressText"></div>
+  <div id="score"></div>
+</div>
+
+<div class="progress"><div class="bar" id="bar"></div></div>
+
+<div class="card" id="card"></div>
+
+<div style="text-align:center">
+<button onclick="prev()">⬅</button>
+<button onclick="next()">➡</button>
+<button onclick="check()">Sprawdź</button>
+<button onclick="finish()">Zakończ</button>
+</div>
+
+<div style="text-align:center;margin-top:10px;">
+<button onclick="mode='learn'" class="secondary">Tryb nauki</button>
+<button onclick="mode='exam'" class="secondary">Tryb egzamin</button>
+<button onclick="repeatMistakes()" class="secondary">Powtórz błędy</button>
+</div>
+
+</div>
+
+<script>
+
+let mode="learn";
+let current=0;
+let checked=false;
+let user={};
+let mistakes=[];
+let activeSet=[...Array(40).keys()];
+
+const questions = [
+
+{q:"Do metod kontroli bezpieczeństwa bagażu rejestrowanego zgodnie z Rozp. 2015/1998 zaliczamy:",a:["systemy wykrywania urządzeń wybuchowych","system do wykrywania płynnych materiałów wybuchowych","urządzenie do prześwietlania bagażu","systemy wykrywania materiałów wybuchowych"]},
+
+{q:"Z kontroli bezpieczeństwa w trakcie wykonywania czynności służbowych zwolnieni są posiadający kartę identyfikacyjną portu lotniczego:",a:["członkowie Państwowej Agencji Atomistyki","pracownicy Państwowej Agencji Żeglugi Powietrznej","żołnierze Żandarmerii Wojskowej","żołnierze Służby Wywiadu Wojskowego"]},
+
+{q:"Do metod kontroli bezpieczeństwa bagażu kabinowego zgodnie z Rozp. 2015/1998 zaliczamy:",a:["ETD w połączeniu z HHMD","ETD","urządzenia do wykrywania materiałów wybuchowych","urządzenia do wykrywania materiałów wybuchowych w butach"]},
+
+{q:"Do metod kontroli bezpieczeństwa przedmiotów przenoszonych przez osoby niebędące pasażerami zaliczamy:",a:["urządzenie do wykrywania metali w rzeczach","Pies do wykrywania materiałów wybuchowych w połączeniu z kontrolą manualną","SMD","kontrolę manualną"]},
+
+{q:"10–20% bagażu rejestrowanego kontrolowanego RTG podlega:",a:["ETD","PWMW","kontroli manualnej","EDS"]},
+
+{q:"Do kategorii przedmiotów zabronionych w bagażu rejestrowanym zaliczamy:",a:["proch strzelniczy","dynamit","rewolwer","paralizator"]},
+
+{q:"Do metod kontroli bezpieczeństwa bagażu rejestrowanego zaliczamy:",a:["ETD","kontrole manualną","urządzenie rentgenowskie","PWMW"]},
+
+{q:"Z kontroli bezpieczeństwa zwolnieni są:",a:["funkcjonariusze SOP","strażacy PSP (kontrole)","strażacy LSRG","funkcjonariusze CBA"]},
+
+{q:"10–20% pasażerów poddaje się kontroli:",a:["ETD+SMD","skanerem ciała","kontrolą manualną","manualna+SMD"]},
+
+{q:"Bagaż bez właściciela – czynniki:",a:["nie stawił się","opuścił samolot","odmowa bez winy","odmowa z winy"]},
+
+{q:"Dodatkowe środki kontroli bagażu kabinowego:",a:["kontrola manualna","HHMD","ETD","RTG"]},
+
+{q:"Ze sprawdzenia zwolnione są pojazdy:",a:["PSP","Służby Więziennej","Straży Miejskiej","LSRG"]},
+
+{q:"Z kontroli bezpieczeństwa zwolniony jest:",a:["Inspektor ULC","SOL z bronią","PKBWL","SG"]},
+
+{q:"Z kontroli bezpieczeństwa zwolnieni są:",a:["Służba Więzienna","Frontex","ŻW","Agencja Wywiadu"]},
+
+{q:"Za nadzór nad przewożoną bronią odpowiada:",a:["Straż Graniczna","KAS","SOL","Policja"]},
+
+{q:"Przedmioty zabronione w kabinowym:",a:["rękawice robocze","dynamit","nóż sprężynowy","aerozol odstraszający"]},
+
+{q:"Sprzęt PRM kontrolowany jak:",a:["rejestrowany","kabinowy","inne osoby","zaopatrzenie"]},
+
+{q:"Z kontroli zwolnieni:",a:["ochrona","PRM","ochrona z bronią","ŻW MON"]},
+
+{q:"Przedmioty zabronione:",a:["naboje dymne","kij baseball","śrubokręt 5cm","nóż karton"]},
+
+{q:"Zabronione w rejestrowanym:",a:["ATP","heksogen","amunicja","pentryt"]},
+
+{q:"Z kontroli zwolnieni:",a:["PAŻP","ministerstwo","ULC","SKW"]},
+
+{q:"Pojazdy zwolnione:",a:["CBA","KAS","WOT","ochrona"]},
+
+{q:"ETD próbki:",a:["zamki","rączki","zamknięcia","podszewka"]},
+
+{q:"Bagaż zabezpieczony:",a:["chroniony fizycznie","operacyjna","po kontroli","oznaczony"]},
+
+{q:"Metody kabinowego:",a:["ETD","manualna","RTG","PWMW"]},
+
+{q:"Dodatkowe środki pasażerów:",a:["skaner","materie org","HHMD","HHMD"]},
+
+{q:"ETD osoba:",a:["pas","ubranie","przedmioty","dłonie"]},
+
+{q:"Podstawowe kabinowego:",a:["ETD","RTG","SED","EDS"]},
+
+{q:"Bagaż bez właściciela:",a:["brak transferu","opuścił","rezygnacja","zmiana lotu"]},
+
+{q:"Zabronione:",a:["fajerwerki","naboje","zapalniki","pirotechniczne"]},
+
+{q:"Dodatkowe:",a:["pies","HHMD","ETD","RTG"]},
+
+{q:"ETD bagaż:",a:["podszewka","kieszenie","przedmioty","uchwyty"]},
+
+{q:"Tranzyt:",a:["nie","UE","na pokładzie","zgodne UE"]},
+
+{q:"Bagaż zabezpieczony:",a:["krytyczna","zastrzeżona","operacyjna","publiczna"]},
+
+{q:"Tranzyt 2:",a:["na pokładzie","nie","UE","zgodne UE"]},
+
+{q:"Dozwolone:",a:["rękawice","antyperspirant","laptop","aerozol"]},
+
+{q:"Zabronione:",a:["zapalające","pistolet","amunicja","fajerwerki"]},
+
+{q:"Zwolnieni:",a:["wicepremier","premier","wice marszałek","sejmik"]},
+
+{q:"Metody:",a:["EDS","PWMW","ETD","APID"]},
+
+{q:"Podstawowe:",a:["MDE","RTG","APID","manualna"]}
+
+];
+
+const answers = {
+1:["d"],2:["c","d"],3:["b","c"],4:["d"],5:["a","b"],6:["a","b"],
+7:["a","b","c","d"],8:["a","b","c"],9:["b","c"],10:["a","c","d"],
+11:["c"],12:["a","b","c"],13:["a","b","d"],14:["b","c","d"],
+15:["c"],16:["b","c","d"],17:["b"],18:["b","d"],19:["a","b","d"],
+20:["a","b","c","d"],21:["d"],22:["a","b","d"],23:["a","b","c"],
+24:["a","c"],25:["a","b","c","d"],26:["c"],27:["d"],28:["b","d"],
+29:["a","d"],30:["a","b","c","d"],31:["a","c"],32:["a","c","d"],
+33:["b","d"],34:["a"],35:["a","c","d"],36:["a","b","c"],
+37:["a","d"],38:["a","b"],39:["a","b","c"],40:["b","d"]
+};
+
+function render(){
+checked=false;
+let idx=activeSet[current];
+let q=questions[idx];
+
+let html="<h3>"+(idx+1)+". "+q.q+"</h3>";
+
+q.a.forEach((opt,i)=>{
+let letter=["a","b","c","d"][i];
+let active=user[idx]?.includes(letter)?"active":"";
+
+html+=`<div class="option ${active}" onclick="toggle(${i})">
+${letter}. ${opt}
+</div>`;
+});
+
+document.getElementById("card").innerHTML=html;
+updateUI();
+}
+
+function toggle(i){
+let idx=activeSet[current];
+let letter=["a","b","c","d"][i];
+
+if(!user[idx]) user[idx]=[];
+
+if(user[idx].includes(letter)){
+user[idx]=user[idx].filter(x=>x!==letter);
+}else{
+user[idx].push(letter);
+}
+
+render();
+}
+
+function check(){
+if(mode!=="learn") return;
+checked=true;
+
+let idx=activeSet[current];
+let correct=answers[idx+1];
+let chosen=user[idx]||[];
+
+document.querySelectorAll(".option").forEach((el,i)=>{
+let l=["a","b","c","d"][i];
+if(correct.includes(l)) el.classList.add("correct");
+if(chosen.includes(l)&&!correct.includes(l)) el.classList.add("wrong");
+});
+}
+
+function next(){
+if(mode==="learn"&&!checked){alert("Najpierw kliknij SPRAWDŹ");return;}
+if(current<activeSet.length-1){current++;render();}
+}
+
+function prev(){
+if(current>0){current--;render();}
+}
+
+function finish(){
+let score=0;
+mistakes=[];
+
+activeSet.forEach(idx=>{
+let u=user[idx]||[];
+if(JSON.stringify(u.sort())===JSON.stringify(answers[idx+1].sort())){
+score++;
+}else{
+mistakes.push(idx);
+}
+});
+
+alert("Wynik: "+score+"/"+activeSet.length);
+}
+
+function repeatMistakes(){
+if(mistakes.length===0){
+alert("Brak błędów");
+return;
+}
+activeSet=[...mistakes];
+current=0;
+mode="learn";
+render();
+}
+
+function updateUI(){
+document.getElementById("progressText").innerText=(current+1)+"/"+activeSet.length;
+document.getElementById("bar").style.width=((current+1)/activeSet.length*100)+"%";
+}
+
+render();
+
+</script>
+</body>
+</html>
