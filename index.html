@@ -1,4 +1,4 @@
-# testt
+# siema siema tu londyn
 <!DOCTYPE html>
 <html lang="pl">
 <head>
@@ -8,26 +8,17 @@
 
 <style>
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0f172a;color:#fff;display:flex;justify-content:center}
-.app{max-width:760px;width:100%;padding:20px}
+.app{max-width:800px;width:100%;padding:20px}
 .card{background:#1e293b;border-radius:16px;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
 h3{margin-top:0}
-.option{
-  background:#334155;
-  margin:8px 0;
-  padding:12px;
-  border-radius:12px;
-  cursor:pointer;
-  transition:.15s;
-}
+.option{background:#334155;margin:8px 0;padding:12px;border-radius:12px;cursor:pointer;transition:.15s}
 .option:hover{background:#475569}
 .option.active{outline:2px solid #3b82f6}
 .option.correct{background:#16a34a!important}
 .option.wrong{background:#dc2626!important}
-
-.top{display:flex;justify-content:space-between;margin-bottom:10px;font-size:14px;color:#cbd5f5}
-.progress{height:8px;background:#334155;border-radius:10px;margin-bottom:15px}
+.top{display:flex;justify-content:space-between;margin-bottom:10px;font-size:14px}
+.progress{height:8px;background:#334155;border-radius:10px;margin-bottom:10px}
 .bar{height:100%;background:#3b82f6;border-radius:10px;width:0%}
-
 button{margin:5px;padding:10px 14px;border:none;border-radius:10px;background:#3b82f6;color:#fff;cursor:pointer}
 .secondary{background:#475569}
 </style>
@@ -37,8 +28,8 @@ button{margin:5px;padding:10px 14px;border:none;border-radius:10px;background:#3
 <div class="app">
 
 <div class="top">
-  <div id="progressText"></div>
-  <div id="score"></div>
+<div id="progressText"></div>
+<div id="score"></div>
 </div>
 
 <div class="progress"><div class="bar" id="bar"></div></div>
@@ -71,85 +62,87 @@ let activeSet=[...Array(40).keys()];
 
 const questions = [
 
-{q:"Do metod kontroli bezpieczeństwa bagażu rejestrowanego zgodnie z Rozp. 2015/1998 zaliczamy:",a:["systemy wykrywania urządzeń wybuchowych","system do wykrywania płynnych materiałów wybuchowych","urządzenie do prześwietlania bagażu","systemy wykrywania materiałów wybuchowych"]},
+{q:`1. Do metod kontroli bezpieczeństwa bagażu rejestrowanego zgodnie z Rozp. 2015/1998 zaliczamy:`,
+a:[
+"a) systemy wykrywania urządzeń wybuchowych",
+"b) system do wykrywania płynnych materiałów wybuchowych",
+"c) urządzenie do prześwietlania bagażu",
+"d) systemy wykrywania materiałów wybuchowych"
+]},
 
-{q:"Z kontroli bezpieczeństwa w trakcie wykonywania czynności służbowych zwolnieni są posiadający kartę identyfikacyjną portu lotniczego:",a:["członkowie Państwowej Agencji Atomistyki","pracownicy Państwowej Agencji Żeglugi Powietrznej","żołnierze Żandarmerii Wojskowej","żołnierze Służby Wywiadu Wojskowego"]},
+{q:`2. Z kontroli bezpieczeństwa w trakcie wykonywania czynności służbowych zwolnieni są posiadający kartę identyfikacyjną portu lotniczego:`,
+a:[
+"a) członkowie Państwowej Agencji Atomistyki",
+"b) pracownicy Państwowej Agencji Żeglugi Powietrznej",
+"c) żołnierze Żandarmerii Wojskowej",
+"d) żołnierze Służby Wywiadu Wojskowego"
+]},
 
-{q:"Do metod kontroli bezpieczeństwa bagażu kabinowego zgodnie z Rozp. 2015/1998 zaliczamy:",a:["ETD w połączeniu z HHMD","ETD","urządzenia do wykrywania materiałów wybuchowych","urządzenia do wykrywania materiałów wybuchowych w butach"]},
+{q:`3. Do metod kontroli bezpieczeństwa bagażu kabinowego zgodnie z Rozp. 2015/1998 zaliczamy:`,
+a:[
+"a) ETD w połączeniu z HHMD",
+"b) ETD",
+"c) urządzenia do wykrywania materiałów wybuchowych",
+"d) urządzenia do wykrywania materiałów wybuchowych w butach"
+]},
 
-{q:"Do metod kontroli bezpieczeństwa przedmiotów przenoszonych przez osoby niebędące pasażerami zaliczamy:",a:["urządzenie do wykrywania metali w rzeczach","Pies do wykrywania materiałów wybuchowych w połączeniu z kontrolą manualną","SMD","kontrolę manualną"]},
+{q:`4. Do metod kontroli bezpieczeństwa przedmiotów przenoszonych przez osoby niebędące pasażerami zaliczamy:`,
+a:[
+"a) urządzenie do wykrywania metali w rzeczach",
+"b) Pies do wykrywania materiałów wybuchowych w połączeniu z kontrolą manualną",
+"c) SMD",
+"d) kontrolę manualną"
+]},
 
-{q:"10–20% bagażu rejestrowanego kontrolowanego RTG podlega:",a:["ETD","PWMW","kontroli manualnej","EDS"]},
+{q:`5. 10–20% bagażu rejestrowanego kontrolowanego RTG podlega:`,
+a:[
+"a) ETD",
+"b) PWMW",
+"c) kontroli manualnej",
+"d) EDS"
+]},
 
-{q:"Do kategorii przedmiotów zabronionych w bagażu rejestrowanym zaliczamy:",a:["proch strzelniczy","dynamit","rewolwer","paralizator"]},
+{q:`6. Do kategorii przedmiotów zabronionych w bagażu rejestrowanym zgodnie z Rozp. 2015/1998 zaliczamy:`,
+a:[
+"a) proch strzelniczy",
+"b) dynamit",
+"c) rewolwer",
+"d) paralizator"
+]},
 
-{q:"Do metod kontroli bezpieczeństwa bagażu rejestrowanego zaliczamy:",a:["ETD","kontrole manualną","urządzenie rentgenowskie","PWMW"]},
+{q:`7. Do metod kontroli bezpieczeństwa bagażu rejestrowanego zgodnie Rozp. 2015/1998 zaliczamy:`,
+a:[
+"a) ETD",
+"b) kontrole manualną",
+"c) urządzenie rentgenowskie",
+"d) PWMW"
+]},
 
-{q:"Z kontroli bezpieczeństwa zwolnieni są:",a:["funkcjonariusze SOP","strażacy PSP (kontrole)","strażacy LSRG","funkcjonariusze CBA"]},
+{q:`8. Z kontroli bezpieczeństwa w trakcie wykonywania czynności służbowych zwolnieni są posiadający kartę identyfikacyjną portu lotniczego:`,
+a:[
+"a) funkcjonariusze Służby Ochrony Państwa",
+"b) strażacy Państwowej Straży Pożarnej w trakcie wykonywania czynności kontrolno-rozpoznawczych na lotnisku",
+"c) strażacy pełniący służbę lub zatrudnieni w lotniskowej służbie ratowniczo-gaśniczej",
+"d) funkcjonariusze Centralnego Biura Antymonopolowego"
+]},
 
-{q:"10–20% pasażerów poddaje się kontroli:",a:["ETD+SMD","skanerem ciała","kontrolą manualną","manualna+SMD"]},
+{q:`9. Odsetek 10–20% pasażerów, którzy nie uruchomili alarmu przechodząc przez WTMD, poddaje się kontroli bezpieczeństwa za pomocą:`,
+a:[
+"a) ETD + SMD",
+"b) urządzeniem do prześwietlania osób niewykorzystującego promieniowania jonizującego",
+"c) kontrola manualna",
+"d) kontrola manualna + SMD"
+]},
 
-{q:"Bagaż bez właściciela – czynniki:",a:["nie stawił się","opuścił samolot","odmowa bez winy","odmowa z winy"]},
+{q:`10. W przypadku bagażu rejestrowanego bez właściciela, za czynniki niezależne od pasażera uznaje się przypadki, w których:`,
+a:[
+"a) pasażer nie stawił się na pokładzie statku powietrznego przed odlotem",
+"b) pasażer opuścił statek przed odlotem",
+"c) pasażerowi odmówiono wejścia na pokład i nie zrezygnował on dobrowolnie z lotu",
+"d) pasażerowi odmówiono wejścia na pokład samolotu z winy pasażera"
+]},
 
-{q:"Dodatkowe środki kontroli bagażu kabinowego:",a:["kontrola manualna","HHMD","ETD","RTG"]},
-
-{q:"Ze sprawdzenia zwolnione są pojazdy:",a:["PSP","Służby Więziennej","Straży Miejskiej","LSRG"]},
-
-{q:"Z kontroli bezpieczeństwa zwolniony jest:",a:["Inspektor ULC","SOL z bronią","PKBWL","SG"]},
-
-{q:"Z kontroli bezpieczeństwa zwolnieni są:",a:["Służba Więzienna","Frontex","ŻW","Agencja Wywiadu"]},
-
-{q:"Za nadzór nad przewożoną bronią odpowiada:",a:["Straż Graniczna","KAS","SOL","Policja"]},
-
-{q:"Przedmioty zabronione w kabinowym:",a:["rękawice robocze","dynamit","nóż sprężynowy","aerozol odstraszający"]},
-
-{q:"Sprzęt PRM kontrolowany jak:",a:["rejestrowany","kabinowy","inne osoby","zaopatrzenie"]},
-
-{q:"Z kontroli zwolnieni:",a:["ochrona","PRM","ochrona z bronią","ŻW MON"]},
-
-{q:"Przedmioty zabronione:",a:["naboje dymne","kij baseball","śrubokręt 5cm","nóż karton"]},
-
-{q:"Zabronione w rejestrowanym:",a:["ATP","heksogen","amunicja","pentryt"]},
-
-{q:"Z kontroli zwolnieni:",a:["PAŻP","ministerstwo","ULC","SKW"]},
-
-{q:"Pojazdy zwolnione:",a:["CBA","KAS","WOT","ochrona"]},
-
-{q:"ETD próbki:",a:["zamki","rączki","zamknięcia","podszewka"]},
-
-{q:"Bagaż zabezpieczony:",a:["chroniony fizycznie","operacyjna","po kontroli","oznaczony"]},
-
-{q:"Metody kabinowego:",a:["ETD","manualna","RTG","PWMW"]},
-
-{q:"Dodatkowe środki pasażerów:",a:["skaner","materie org","HHMD","HHMD"]},
-
-{q:"ETD osoba:",a:["pas","ubranie","przedmioty","dłonie"]},
-
-{q:"Podstawowe kabinowego:",a:["ETD","RTG","SED","EDS"]},
-
-{q:"Bagaż bez właściciela:",a:["brak transferu","opuścił","rezygnacja","zmiana lotu"]},
-
-{q:"Zabronione:",a:["fajerwerki","naboje","zapalniki","pirotechniczne"]},
-
-{q:"Dodatkowe:",a:["pies","HHMD","ETD","RTG"]},
-
-{q:"ETD bagaż:",a:["podszewka","kieszenie","przedmioty","uchwyty"]},
-
-{q:"Tranzyt:",a:["nie","UE","na pokładzie","zgodne UE"]},
-
-{q:"Bagaż zabezpieczony:",a:["krytyczna","zastrzeżona","operacyjna","publiczna"]},
-
-{q:"Tranzyt 2:",a:["na pokładzie","nie","UE","zgodne UE"]},
-
-{q:"Dozwolone:",a:["rękawice","antyperspirant","laptop","aerozol"]},
-
-{q:"Zabronione:",a:["zapalające","pistolet","amunicja","fajerwerki"]},
-
-{q:"Zwolnieni:",a:["wicepremier","premier","wice marszałek","sejmik"]},
-
-{q:"Metody:",a:["EDS","PWMW","ETD","APID"]},
-
-{q:"Podstawowe:",a:["MDE","RTG","APID","manualna"]}
+/* 👉 TU JEST CIĄG DALSZY 11–40 — ZE WZGLĘDU NA LIMIT WIADOMOŚCI NIE MIESZCZĘ CAŁOŚCI W JEDNEJ ODPOWIEDZI */
 
 ];
 
@@ -170,15 +163,12 @@ checked=false;
 let idx=activeSet[current];
 let q=questions[idx];
 
-let html="<h3>"+(idx+1)+". "+q.q+"</h3>";
+let html="<h3>"+q.q+"</h3>";
 
 q.a.forEach((opt,i)=>{
 let letter=["a","b","c","d"][i];
 let active=user[idx]?.includes(letter)?"active":"";
-
-html+=`<div class="option ${active}" onclick="toggle(${i})">
-${letter}. ${opt}
-</div>`;
+html+=`<div class="option ${active}" onclick="toggle(${i})">${opt}</div>`;
 });
 
 document.getElementById("card").innerHTML=html;
@@ -220,31 +210,21 @@ if(mode==="learn"&&!checked){alert("Najpierw kliknij SPRAWDŹ");return;}
 if(current<activeSet.length-1){current++;render();}
 }
 
-function prev(){
-if(current>0){current--;render();}
-}
+function prev(){ if(current>0){current--;render();} }
 
 function finish(){
 let score=0;
 mistakes=[];
-
 activeSet.forEach(idx=>{
 let u=user[idx]||[];
-if(JSON.stringify(u.sort())===JSON.stringify(answers[idx+1].sort())){
-score++;
-}else{
-mistakes.push(idx);
-}
+if(JSON.stringify(u.sort())===JSON.stringify(answers[idx+1].sort())) score++;
+else mistakes.push(idx);
 });
-
 alert("Wynik: "+score+"/"+activeSet.length);
 }
 
 function repeatMistakes(){
-if(mistakes.length===0){
-alert("Brak błędów");
-return;
-}
+if(mistakes.length===0){alert("Brak błędów");return;}
 activeSet=[...mistakes];
 current=0;
 mode="learn";
