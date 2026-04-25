@@ -424,160 +424,76 @@ const answers = {
 let current=0;
 let user={};
 let checked={};
-let mistakes=[];
-let set=[...Array(40).keys()];
-
-let time = 40*60; // 40 minut
+let set=[...Array(questions.length).keys()];
+let time=40*60;
 let timerInterval;
 
-// ================== TIMER ==================
 function startTimer(){
 timerInterval=setInterval(()=>{
 time--;
 let m=Math.floor(time/60);
 let s=time%60;
-document.getElementById("timer").innerText=
-`${m}:${s.toString().padStart(2,"0")}`;
-
-if(time<=0){
-finish();
-}
+document.getElementById("timer").innerText=`${m}:${s.toString().padStart(2,"0")}`;
+if(time<=0) finish();
 },1000);
 }
 
-// ================== CORE ==================
-function isCorrect(i){
-let u=user[i]||[];
-let c=answers[i]||[];
-if(u.length!==c.length) return false;
-return c.every(x=>u.includes(x));
-}
-
-// ================== RENDER ==================
 function render(){
 let id=set[current];
 let q=questions[id];
-
 let html=`<h3>${q.q}</h3>`;
 
 q.a.forEach((opt,i)=>{
 let l=["a","b","c","d"][i];
 let cls="option";
-
 if(user[id]?.includes(l)) cls+=" active";
-
 if(checked[id]){
 let c=answers[id];
 let u=user[id]||[];
-
 if(c.includes(l)) cls+=" correct";
 else if(u.includes(l)) cls+=" wrong";
 }
-
 html+=`<div class="${cls}" onclick="toggle(${i})">${opt}</div>`;
 });
 
 document.getElementById("quiz").innerHTML=html;
-
-document.getElementById("progressText").innerText=
-`${current+1}/${set.length}`;
-
-document.getElementById("bar").style.width=
-((current+1)/set.length*100)+"%";
+document.getElementById("progressText").innerText=`${current+1}/${set.length}`;
+document.getElementById("bar").style.width=((current+1)/set.length*100)+"%";
 }
 
-// ================== TOGGLE ==================
 function toggle(i){
 let id=set[current];
 let l=["a","b","c","d"][i];
-
 if(!user[id]) user[id]=[];
-
 if(user[id].includes(l)){
 user[id]=user[id].filter(x=>x!==l);
-}else{
-user[id].push(l);
-}
-
+}else user[id].push(l);
 render();
 }
 
-// ================== CHECK ==================
-function check(){
-let id=set[current];
-checked[id]=true;
-render();
-}
+function check(){checked[set[current]]=true;render();}
+function next(){if(current<set.length-1){current++;render();}}
+function prev(){if(current>0){current--;render();}}
 
-// ================== NAV ==================
-function next(){
-if(current<set.length-1){
-current++;
-render();
-}
-}
-
-function prev(){
-if(current>0){
-current--;
-render();
-}
-}
-
-// ================== FINISH ==================
 function finish(){
 clearInterval(timerInterval);
-
 let score=0;
-mistakes=[];
-
 set.forEach(i=>{
-if(isCorrect(i)) score++;
-else mistakes.push(i);
+let u=user[i]||[];
+let c=answers[i]||[];
+if(u.length===c.length && c.every(x=>u.includes(x))) score++;
 });
-
-saveScore(score);
-
-showEnd(score);
-}
-
-// ================== END SCREEN ==================
-function showEnd(score){
 document.getElementById("quiz").style.display="none";
 document.querySelectorAll("button").forEach(b=>b.style.display="none");
-
 document.getElementById("endScreen").style.display="block";
-document.getElementById("result").innerText=
-`${score}/${set.length}`;
-
-loadRank();
+document.getElementById("result").innerText=`${score}/${set.length}`;
 }
 
-// ================== RANKING ==================
-function saveScore(score){
-let rank=JSON.parse(localStorage.getItem("rank")||"[]");
-rank.push(score);
-rank=rank.sort((a,b)=>b-a).slice(0,5);
-localStorage.setItem("rank",JSON.stringify(rank));
-}
+function restart(){location.reload();}
 
-function loadRank(){
-let rank=JSON.parse(localStorage.getItem("rank")||"[]");
-document.getElementById("rank").innerHTML=
-rank.map((r,i)=>`#${i+1} ${r}/${set.length}`).join("<br>");
-}
-
-// ================== RESTART ==================
-function restart(){
-location.reload();
-}
-
-// START
 render();
 startTimer();
 
-startTimer();
-render();
 </script>
 </body>
 </html>
