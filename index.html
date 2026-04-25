@@ -4,29 +4,70 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Test 4</title>
+<title>Quiz 40 pytań</title>
 
 <style>
-body{margin:0;font-family:system-ui;background:#0f172a;color:#fff;display:flex;justify-content:center}
-.app{max-width:850px;width:100%;padding:20px}
-.card{background:#1e293b;padding:20px;border-radius:16px}
+body {
+  margin:0;
+  font-family:-apple-system, BlinkMacSystemFont, sans-serif;
+  background:#0f172a;
+  color:#fff;
+  display:flex;
+  justify-content:center;
+}
+.app {
+  max-width:700px;
+  width:100%;
+  padding:20px;
+}
+.card {
+  background:#1e293b;
+  border-radius:16px;
+  padding:20px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.4);
+}
+.option {
+  display:block;
+  background:#334155;
+  margin:8px 0;
+  padding:12px;
+  border-radius:12px;
+  cursor:pointer;
+  transition:0.2s;
+}
+.option:hover { background:#475569; }
+.option.correct { background:#16a34a !important; }
+.option.wrong { background:#dc2626 !important; }
+input { display:none; }
 
-.option{background:#334155;margin:8px 0;padding:12px;border-radius:10px;cursor:pointer}
-.option:hover{background:#475569}
-.option.active{outline:2px solid #3b82f6}
-.option.correct{background:#16a34a!important}
-.option.wrong{background:#dc2626!important}
+.top {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
+.progress {
+  height:8px;
+  background:#334155;
+  border-radius:10px;
+}
+.bar {
+  height:100%;
+  background:#3b82f6;
+  border-radius:10px;
+  width:0%;
+}
 
-.top{display:flex;justify-content:space-between;margin-bottom:10px}
-.bar{height:8px;background:#3b82f6;width:0%;border-radius:10px}
-.progress{background:#334155;border-radius:10px;height:8px;margin-bottom:10px}
-
-button{margin:5px;padding:10px 14px;border:none;border-radius:10px;cursor:pointer}
-.primary{background:#3b82f6;color:#fff}
-.secondary{background:#475569;color:#fff}
-
-.end{display:none;text-align:center}
-.timer{font-weight:bold;color:#fbbf24}
+button {
+  margin:5px;
+  padding:10px 15px;
+  border:none;
+  border-radius:10px;
+  background:#3b82f6;
+  color:#fff;
+  cursor:pointer;
+}
+.secondary { background:#475569; }
 </style>
 </head>
 
@@ -34,31 +75,34 @@ button{margin:5px;padding:10px 14px;border:none;border-radius:10px;cursor:pointe
 <div class="app">
 
 <div class="top">
-<div id="progressText"></div>
-<div class="timer" id="timer">40:00</div>
+  <div id="progressText"></div>
+  <div id="score"></div>
 </div>
 
 <div class="progress"><div class="bar" id="bar"></div></div>
 
-<div class="card" id="quiz"></div>
+<div class="card" id="card"></div>
 
 <div style="text-align:center">
-<button class="secondary" onclick="prev()">⬅</button>
-<button class="secondary" onclick="next()">➡</button>
-<button class="primary" onclick="check()">Sprawdź</button>
-<button class="primary" onclick="finish()">Zakończ</button>
+  <button onclick="prev()">⬅</button>
+  <button onclick="next()">➡</button>
+  <button onclick="check()">Sprawdź</button>
+  <button onclick="finish()">Zakończ</button>
 </div>
 
-<div class="end" id="endScreen">
-<h2>Wynik</h2>
-<div id="result"></div>
-<button class="primary" onclick="restart()">Restart</button>
+<div style="text-align:center;margin-top:10px;">
+  <button onclick="mode='learn'" class="secondary">Tryb nauki</button>
+  <button onclick="mode='exam'" class="secondary">Tryb egzamin</button>
+</div>
 </div>
 
-</div>
+let current = 0;
+let mode = "learn";
+let checked = false;
+let user = {};
 
 <script>
-const questions = [ 
+
 const questions = [
 {q:"1. Do metod kontroli bezpieczeństwa bagażu rejestrowanego zgodnie z Rozp. 2015/1998 zaliczamy:",a:["a) systemy wykrywania urządzeń wybuchowych","b) system do wykrywania płynnych materiałów wybuchowych","c) urządzenie do prześwietlania bagażu","d) systemy wykrywania materiałów wybuchowych"]},
 
@@ -142,139 +186,111 @@ const questions = [
 ];
 
 const answers = {
-
-0:["d"],
-1:["b","c"],
-2:["a","b"],
-3:["b","d"],
-4:["a","d"],
-5:["a","b"],
-6:["a","b","c","d"],
-7:["a","b","c"],
-8:["a","c"],
-9:["a","c","d"],
-
-10:["a","c"],
-11:["a","b","c"],
-12:["a","b","d"],
-13:["b","c"],
-14:["a"],
-15:["b","c","d"],
-16:["b","c","d"],
-17:["b"],
-18:["b","d"],
-19:["a","b","d"],
-
-20:["a","b","c","d"],
-21:["d"],
-22:["a","b","d"],
-23:["a","b","c"],
-24:["a","c"],
-25:["a","b","c","d"],
-26:["c"],
-27:["d"],
-28:["b","d"],
-29:["a","d"],
-
-30:["a","b","c","d"],
-31:["a","c"],
-32:["a","c","d"],
-33:["b","d"],
-34:["a"],
-35:["a","c","d"],
-36:["a","b","c"],
-37:["a","d"],
-38:["a","b"],
-39:["a","b","c"],
-
-40:["b","d"]
+1:["d"],2:["c","d"],3:["b","c"],4:["d"],5:["a","b"],6:["a","b"],
+7:["a","b","c","d"],8:["a","b","c"],9:["b","c"],10:["a","c","d"],
+11:["c"],12:["a","b","c"],13:["a","b","d"],14:["b","c","d"],
+15:["c"],16:["b","c","d"],17:["b"],18:["b","d"],19:["a","b","d"],
+20:["a","b","c","d"],21:["d"],22:["a","b","d"],23:["a","b","c"],
+24:["a","c"],25:["a","b","c","d"],26:["c"],27:["d"],28:["b","d"],
+29:["a","d"],30:["a","b","c","d"],31:["a","c"],32:["a","c","d"],
+33:["b","d"],34:["a"],35:["a","c","d"],36:["a","b","c"],
+37:["a","d"],38:["a","b"],39:["a","b","c"],40:["b","d"]
 };
 
-
-let current=0;
-let user={};
-let checked={};
-let set=[...Array(questions.length).keys()];
-let time=40*60;
-let timer;
-
-function startTimer(){
-timer=setInterval(()=>{
-time--;
-if(time<=0){time=0;clearInterval(timer);finish();return;}
-let m=Math.floor(time/60);
-let s=time%60;
-document.getElementById("timer").innerText=`${m}:${s.toString().padStart(2,"0")}`;
-},1000);
-}
-
 function render(){
-let id=set[current];
-let q=questions[id];
+checked=false;
+let q = questions[current];
+let div = document.getElementById("card");
 
-let html=`<h3>${q.q}</h3>`;
+div.innerHTML = "<h3>"+(current+1)+". "+q.q+"</h3>";
 
 q.a.forEach((opt,i)=>{
-let l=["a","b","c","d"][i];
-let cls="option";
+let letter = ["a","b","c","d"][i];
+let active = user[current]?.includes(letter) ? "checked" : "";
 
-if(user[id]?.includes(opt)) cls+=" active";
-
-if(checked[id]){
-let c=answers[id];
-let u=user[id]||[];
-if(c.includes(opt)) cls+=" correct";
-else if(u.includes(opt)) cls+=" wrong";
-}
-
-html+=`<div class="${cls}" onclick="toggle(${i})">${opt}</div>`;
+div.innerHTML += `
+<div class="option" id="opt${i}" onclick="toggle('${letter}')">
+${letter}. ${opt}
+</div>`;
 });
 
-document.getElementById("quiz").innerHTML=html;
-document.getElementById("progressText").innerText=`${current+1}/${set.length}`;
-document.getElementById("bar").style.width=((current+1)/set.length*100)+"%";
+updateUI();
 }
 
-function toggle(i){
-let id=set[current];
-let opt=questions[id].a[i];
+function toggle(letter){
+if(!user[current]) user[current]=[];
 
-if(!user[id]) user[id]=[];
-
-if(user[id].includes(opt)){
-user[id]=user[id].filter(x=>x!==opt);
+if(user[current].includes(letter)){
+user[current]=user[current].filter(x=>x!==letter);
 }else{
-user[id].push(opt);
+user[current].push(letter);
 }
 
 render();
 }
 
-function check(){checked[set[current]]=true;render();}
-function next(){if(current<set.length-1){current++;render();}}
-function prev(){if(current>0){current--;render();}}
+function check(){
+if(mode!=="learn") return;
+
+checked=true;
+
+let correct = answers[current+1];
+let chosen = user[current] || [];
+
+document.querySelectorAll(".option").forEach((el,i)=>{
+let letter = ["a","b","c","d"][i];
+
+if(correct.includes(letter)) el.classList.add("correct");
+if(chosen.includes(letter) && !correct.includes(letter)) el.classList.add("wrong");
+});
+}
+
+function next(){
+if(mode==="learn" && !checked){
+alert("Najpierw kliknij SPRAWDŹ");
+return;
+}
+if(current<questions.length-1){
+current++;
+render();
+}
+}
+
+function prev(){
+if(current>0){
+current--;
+render();
+}
+}
 
 function finish(){
-clearInterval(timer);
 let score=0;
 
-set.forEach(i=>{
+for(let i=0;i<40;i++){
 let u=user[i]||[];
-let c=answers[i]||[];
-
-if(u.length===c.length && c.every(x=>u.includes(x))) score++;
-});
-
-document.getElementById("quiz").style.display="none";
-document.querySelectorAll("button").forEach(b=>b.style.display="none");
-document.getElementById("endScreen").style.display="block";
-document.getElementById("result").innerText=`${score}/${set.length}`;
+if(JSON.stringify(u.sort())===JSON.stringify(answers[i+1].sort())){
+score++;
+}
 }
 
-function restart(){location.reload();}
+alert("Wynik końcowy: "+score+"/40");
+}
+
+function updateUI(){
+document.getElementById("progressText").innerText = (current+1)+"/40";
+document.getElementById("bar").style.width = ((current+1)/40*100)+"%";
+
+let s=0;
+for(let i=0;i<40;i++){
+let u=user[i]||[];
+if(JSON.stringify(u.sort())===JSON.stringify(answers[i+1].sort())){
+s++;
+}
+}
+document.getElementById("score").innerText = "Wynik: "+s+"/40";
+}
 
 render();
-startTimer();
 
 </script>
 </body>
