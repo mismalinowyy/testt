@@ -153,17 +153,21 @@ const answers = {
 // ===== RENDER =====
 function render(){
 checked=false;
+
 let q = questions[current];
 
 let html = `<h3>${q.q}</h3>`;
 
 q.a.forEach((opt,i)=>{
-let l=["a","b","c","d"][i];
-let active = (user[current] || []).includes(letter) ? "active" : "";
+let l = ["a","b","c","d"][i];
 
-html += `<div class="option ${active}" onclick="toggle('${letter}')">${opt}</div>`;
+let active = (user[current] || []).includes(l) ? "active" : "";
+
+html += `<div class="option ${active}" onclick="toggle('${l}')">${opt}</div>`;
+});
 
 document.getElementById("card").innerHTML = html;
+
 updateUI();
 }
 
