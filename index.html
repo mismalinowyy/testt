@@ -49,13 +49,51 @@ button{margin:5px;padding:10px 14px;border:none;border-radius:10px;background:#3
 <button onclick="repeatMistakes()" class="secondary">Powtórz błędy</button>
 </div>
 
+
+// ===== STAN =====
+let mode="learn";
+let current=0;
+let user={};
+let mistakes=[];
+let activeSet=[...Array(40).keys()];
+let checkedMap={};
+
+// ===== LOSOWANIE =====
+function shuffle(array){
+for(let i=array.length-1;i>0;i--){
+let j=Math.floor(Math.random()*(i+1));
+[array[i],array[j]]=[array[j],array[i]];
+}
+return array;
+}
+
+// ===== START TRYB NAUKI =====
+function startLearn(){
+mode="learn";
+current=0;
+user={};
+mistakes=[];
+checkedMap={};
+activeSet=[...Array(40).keys()];
+render();
+}
+
+// ===== START EGZAMIN =====
+function startExam(){
+mode="exam";
+current=0;
+user={};
+mistakes=[];
+checkedMap={};
+activeSet = shuffle([...Array(40).keys()]);
+render();
+}
 </div>
 
 <script>
 
 let mode="learn";
 let current=0;
-let checked=false;
 let user={};
 let mistakes=[];
 let activeSet=[...Array(40).keys()];
