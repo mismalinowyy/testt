@@ -1,53 +1,63 @@
 # siema siema tu londyn
-function shuffle(array){
-for(let i=array.length-1;i>0;i--){
-let j=Math.floor(Math.random()*(i+1));
-[array[i],array[j]]=[array[j],array[i]];
-}
-return array;
-}
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz PRO</title>
 
-// ===== STAN =====
-let mode="learn";
-let current=0;
-let user={};        // user[idx] = ["a","c"]
-let mistakes=[];
-let activeSet=[...Array(40).keys()];
-let checkedMap={};
+<style>
+body{margin:0;font-family:system-ui;background:#0f172a;color:#fff;display:flex;justify-content:center}
+.app{max-width:850px;width:100%;padding:20px}
+.card{background:#1e293b;padding:20px;border-radius:16px}
+.option{background:#334155;margin:8px 0;padding:12px;border-radius:10px;cursor:pointer}
+.option:hover{background:#475569}
+.option.active{outline:2px solid #3b82f6}
+.option.correct{background:#16a34a!important}
+.option.wrong{background:#dc2626!important}
 
-// ===== POPRAWNE SPRAWDZANIE =====
-function isCorrect(idx){
-let chosen = user[idx] || [];
-let correct = answers[idx] || [];
+.top{display:flex;justify-content:space-between;margin-bottom:10px}
+.bar{height:8px;background:#3b82f6;width:0%;border-radius:10px}
+.progress{background:#334155;border-radius:10px;height:8px;margin-bottom:10px}
 
-if(chosen.length !== correct.length) return false;
+button{margin:5px;padding:10px 14px;border:none;border-radius:10px;cursor:pointer}
+.primary{background:#3b82f6;color:#fff}
+.secondary{background:#475569;color:#fff}
 
-return correct.every(x => chosen.includes(x));
-}
+.end{display:none;text-align:center}
+.timer{font-weight:bold;color:#fbbf24}
+</style>
+</head>
 
-// ===== START EGZAMIN =====
-function startExam(){
-mode="exam";
-current=0;
-user={};
-mistakes=[];
-checkedMap={};
+<body>
+<div class="app">
 
-activeSet = shuffle([...Array(40).keys()]);
+<div class="top">
+<div id="progressText"></div>
+<div class="timer" id="timer">--:--</div>
+</div>
 
-render();
-}
+<div class="progress"><div class="bar" id="bar"></div></div>
 
-// ===== START NAUKA =====
-function startLearn(){
-mode="learn";
-current=0;
-user={};
-mistakes=[];
-checkedMap={};
-activeSet=[...Array(40).keys()];
-render();
-}
+<div class="card" id="quiz"></div>
+
+<div style="text-align:center">
+<button class="secondary" onclick="prev()">⬅</button>
+<button class="secondary" onclick="next()">➡</button>
+<button class="primary" onclick="check()">Sprawdź</button>
+<button class="primary" onclick="finish()">Zakończ</button>
+</div>
+
+<div class="end" id="endScreen">
+<h2>Wynik</h2>
+<div id="result"></div>
+<h3>Ranking</h3>
+<div id="rank"></div>
+<button class="primary" onclick="restart()">Restart</button>
+</div>
+
+</div>
+
 {q:`1. Do metod kontroli bezpieczeństwa bagażu rejestrowanego zgodnie z Rozp. 2015/1998 zaliczamy:`,
 a:[
 "a) systemy wykrywania urządzeń wybuchowych",
@@ -381,74 +391,108 @@ const answers = {
 37:["a","d"],38:["a","b"],39:["a","b","c"],40:["b","d"]
 };
 
-function render(){
-let idx=activeSet[current];
-let q=questions[idx];
+const questions = Array.from({length:40}, (_,i)=>({
+q:`Pytanie ${i+1}`,
+a:["A","B","C","D"]
+}));
 
-let html="<h3>"+q.q+"</h3>";
+const answers = {};
+for(let i=0;i<40;i++){
+answers[i]=["a"];
+}
+
+// ================== STAN ==================
+let current=0;
+let user={};
+let checked={};
+let mistakes=[];
+let set=[...Array(40).keys()];
+
+let time = 40*60; // 40 minut
+let timerInterval;
+
+// ================== TIMER ==================
+function startTimer(){
+timerInterval=setInterval(()=>{
+time--;
+let m=Math.floor(time/60);
+let s=time%60;
+document.getElementById("timer").innerText=
+`${m}:${s.toString().padStart(2,"0")}`;
+
+if(time<=0){
+finish();
+}
+},1000);
+}
+
+// ================== CORE ==================
+function isCorrect(i){
+let u=user[i]||[];
+let c=answers[i]||[];
+if(u.length!==c.length) return false;
+return c.every(x=>u.includes(x));
+}
+
+// ================== RENDER ==================
+function render(){
+let id=set[current];
+let q=questions[id];
+
+let html=`<h3>${q.q}</h3>`;
 
 q.a.forEach((opt,i)=>{
-let letter=["a","b","c","d"][i];
+let l=["a","b","c","d"][i];
+let cls="option";
 
-let active=user[idx]?.includes(letter)?"active":"";
+if(user[id]?.includes(l)) cls+=" active";
 
-html+=`<div class="option ${active}" onclick="toggle(${i})">${opt}</div>`;
+if(checked[id]){
+let c=answers[id];
+let u=user[id]||[];
+
+if(c.includes(l)) cls+=" correct";
+else if(u.includes(l)) cls+=" wrong";
+}
+
+html+=`<div class="${cls}" onclick="toggle(${i})">${opt}</div>`;
 });
 
-document.getElementById("card").innerHTML=html;
+document.getElementById("quiz").innerHTML=html;
 
-// ===== pokaz wyników jeśli sprawdzone =====
-if(checkedMap[idx]){
-let correct=answers[idx];
-let chosen=user[idx]||[];
+document.getElementById("progressText").innerText=
+`${current+1}/${set.length}`;
 
-document.querySelectorAll(".option").forEach((el,i)=>{
+document.getElementById("bar").style.width=
+((current+1)/set.length*100)+"%";
+}
+
+// ================== TOGGLE ==================
+function toggle(i){
+let id=set[current];
 let l=["a","b","c","d"][i];
 
-if(correct.includes(l)) el.classList.add("correct");
-if(chosen.includes(l)&&!correct.includes(l)) el.classList.add("wrong");
-});
-}
+if(!user[id]) user[id]=[];
 
-updateUI();
-}
-
-// ===== WYBÓR =====
-function toggle(i){
-let idx=activeSet[current];
-let letter=["a","b","c","d"][i];
-
-if(!user[idx]) user[idx]=[];
-
-if(user[idx].includes(letter)){
-user[idx]=user[idx].filter(x=>x!==letter);
+if(user[id].includes(l)){
+user[id]=user[id].filter(x=>x!==l);
 }else{
-user[idx].push(letter);
+user[id].push(l);
 }
 
 render();
 }
 
-// ===== SPRAWDŹ =====
+// ================== CHECK ==================
 function check(){
-if(mode!=="learn") return;
-
-let idx=activeSet[current];
-checkedMap[idx]=true;
-
+let id=set[current];
+checked[id]=true;
 render();
 }
 
-// ===== NAWIGACJA =====
+// ================== NAV ==================
 function next(){
-let idx=activeSet[current];
-
-if(mode==="learn" && !checkedMap[idx]){
-alert("Najpierw kliknij SPRAWDŹ");
-return;
-}
-
-if(current<activeSet.length-1){
+if(current<set.length-1){
 current++;
 render();
 }
@@ -461,39 +505,58 @@ render();
 }
 }
 
-// ===== WYNIK =====
+// ================== FINISH ==================
 function finish(){
+clearInterval(timerInterval);
+
 let score=0;
 mistakes=[];
 
-activeSet.forEach(idx=>{
-if(isCorrect(idx)){
-score++;
-}else{
-mistakes.push(idx);
-}
+set.forEach(i=>{
+if(isCorrect(i)) score++;
+else mistakes.push(i);
 });
 
-alert("Wynik: "+score+"/"+activeSet.length);
+saveScore(score);
+
+showEnd(score);
 }
 
-// ===== POWTÓRKA =====
-function repeatMistakes(){
-if(mistakes.length===0){
-alert("Brak błędów");
-return;
+// ================== END SCREEN ==================
+function showEnd(score){
+document.getElementById("quiz").style.display="none";
+document.querySelectorAll("button").forEach(b=>b.style.display="none");
+
+document.getElementById("endScreen").style.display="block";
+document.getElementById("result").innerText=
+`${score}/${set.length}`;
+
+loadRank();
 }
 
-activeSet=[...mistakes];
-current=0;
-mode="learn";
-checkedMap={};
+// ================== RANKING ==================
+function saveScore(score){
+let rank=JSON.parse(localStorage.getItem("rank")||"[]");
+rank.push(score);
+rank=rank.sort((a,b)=>b-a).slice(0,5);
+localStorage.setItem("rank",JSON.stringify(rank));
+}
 
+function loadRank(){
+let rank=JSON.parse(localStorage.getItem("rank")||"[]");
+document.getElementById("rank").innerHTML=
+rank.map((r,i)=>`#${i+1} ${r}/${set.length}`).join("<br>");
+}
+
+// ================== RESTART ==================
+function restart(){
+location.reload();
+}
+
+// START
 render();
-}
+startTimer();
 
-// ===== UI =====
-function updateUI(){
-document.getElementById("progressText").innerText=(current+1)+"/"+activeSet.length;
-document.getElementById("bar").style.width=((current+1)/activeSet.length*100)+"%";
-}
+</script>
+</body>
+</html>
