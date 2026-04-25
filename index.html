@@ -4,70 +4,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Quiz 40 pytań</title>
+<title>Quiz 40 pytań FIX</title>
 
 <style>
-body {
-  margin:0;
-  font-family:-apple-system, BlinkMacSystemFont, sans-serif;
-  background:#0f172a;
-  color:#fff;
-  display:flex;
-  justify-content:center;
-}
-.app {
-  max-width:700px;
-  width:100%;
-  padding:20px;
-}
-.card {
-  background:#1e293b;
-  border-radius:16px;
-  padding:20px;
-  box-shadow:0 10px 30px rgba(0,0,0,0.4);
-}
-.option {
-  display:block;
-  background:#334155;
-  margin:8px 0;
-  padding:12px;
-  border-radius:12px;
-  cursor:pointer;
-  transition:0.2s;
-}
-.option:hover { background:#475569; }
-.option.correct { background:#16a34a !important; }
-.option.wrong { background:#dc2626 !important; }
-input { display:none; }
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0f172a;color:#fff;display:flex;justify-content:center}
+.app{max-width:700px;width:100%;padding:20px}
+.card{background:#1e293b;border-radius:16px;padding:20px}
+.option{display:block;background:#334155;margin:8px 0;padding:12px;border-radius:12px;cursor:pointer}
+.option:hover{background:#475569}
+.option.correct{background:#16a34a!important}
+.option.wrong{background:#dc2626!important}
 
-.top {
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:10px;
-}
-.progress {
-  height:8px;
-  background:#334155;
-  border-radius:10px;
-}
-.bar {
-  height:100%;
-  background:#3b82f6;
-  border-radius:10px;
-  width:0%;
-}
+.top{display:flex;justify-content:space-between;margin-bottom:10px}
+.progress{height:8px;background:#334155;border-radius:10px}
+.bar{height:100%;background:#3b82f6;width:0%;border-radius:10px}
 
-button {
-  margin:5px;
-  padding:10px 15px;
-  border:none;
-  border-radius:10px;
-  background:#3b82f6;
-  color:#fff;
-  cursor:pointer;
-}
-.secondary { background:#475569; }
+button{margin:5px;padding:10px 15px;border:none;border-radius:10px;background:#3b82f6;color:#fff;cursor:pointer}
+.secondary{background:#475569}
 </style>
 </head>
 
@@ -90,18 +43,14 @@ button {
   <button onclick="finish()">Zakończ</button>
 </div>
 
-<div style="text-align:center;margin-top:10px;">
-  <button onclick="mode='learn'" class="secondary">Tryb nauki</button>
-  <button onclick="mode='exam'" class="secondary">Tryb egzamin</button>
 </div>
-</div>
-
-let current = 0;
-let mode = "learn";
-let checked = false;
-let user = {};
 
 <script>
+
+// ===== STATE =====
+let current = 0;
+let user = {};
+let checked = false;
 
 const questions = [
 {q:"1. Do metod kontroli bezpieczeństwa bagażu rejestrowanego zgodnie z Rozp. 2015/1998 zaliczamy:",a:["a) systemy wykrywania urządzeń wybuchowych","b) system do wykrywania płynnych materiałów wybuchowych","c) urządzenie do prześwietlania bagażu","d) systemy wykrywania materiałów wybuchowych"]},
@@ -197,59 +146,52 @@ const answers = {
 37:["a","d"],38:["a","b"],39:["a","b","c"],40:["b","d"]
 };
 
+// ===== RENDER =====
 function render(){
 checked=false;
 let q = questions[current];
-let div = document.getElementById("card");
 
-div.innerHTML = "<h3>"+(current+1)+". "+q.q+"</h3>";
+let html = `<h3>${q.q}</h3>`;
 
 q.a.forEach((opt,i)=>{
-let letter = ["a","b","c","d"][i];
-let active = user[current]?.includes(letter) ? "checked" : "";
-
-div.innerHTML += `
-<div class="option" id="opt${i}" onclick="toggle('${letter}')">
-${letter}. ${opt}
-</div>`;
+let l=["a","b","c","d"][i];
+html += `<div class="option" onclick="toggle('${l}')">${opt}</div>`;
 });
 
+document.getElementById("card").innerHTML = html;
 updateUI();
 }
 
-function toggle(letter){
+// ===== TOGGLE =====
+function toggle(l){
 if(!user[current]) user[current]=[];
 
-if(user[current].includes(letter)){
-user[current]=user[current].filter(x=>x!==letter);
+if(user[current].includes(l)){
+user[current]=user[current].filter(x=>x!==l);
 }else{
-user[current].push(letter);
+user[current].push(l);
 }
 
 render();
 }
 
+// ===== CHECK =====
 function check(){
-if(mode!=="learn") return;
-
 checked=true;
 
-let correct = answers[current+1];
+let correct = answers[current+1] || [];
 let chosen = user[current] || [];
 
 document.querySelectorAll(".option").forEach((el,i)=>{
-let letter = ["a","b","c","d"][i];
+let l=["a","b","c","d"][i];
 
-if(correct.includes(letter)) el.classList.add("correct");
-if(chosen.includes(letter) && !correct.includes(letter)) el.classList.add("wrong");
+if(correct.includes(l)) el.classList.add("correct");
+else if(chosen.includes(l)) el.classList.add("wrong");
 });
 }
 
+// ===== NAV =====
 function next(){
-if(mode==="learn" && !checked){
-alert("Najpierw kliknij SPRAWDŹ");
-return;
-}
 if(current<questions.length-1){
 current++;
 render();
@@ -263,33 +205,38 @@ render();
 }
 }
 
+// ===== UI =====
+function updateUI(){
+document.getElementById("progressText").innerText = `${current+1}/${questions.length}`;
+document.getElementById("bar").style.width = ((current+1)/questions.length*100)+"%";
+
+let score=0;
+for(let i=0;i<questions.length;i++){
+let u=user[i]||[];
+let c=answers[i+1]||[];
+if(JSON.stringify(u.sort())===JSON.stringify(c.sort())) score++;
+}
+
+document.getElementById("score").innerText = `Wynik: ${score}/${questions.length}`;
+}
+
+// ===== FINISH =====
 function finish(){
 let score=0;
 
-for(let i=0;i<40;i++){
+for(let i=0;i<questions.length;i++){
 let u=user[i]||[];
-if(JSON.stringify(u.sort())===JSON.stringify(answers[i+1].sort())){
+let c=answers[i+1]||[];
+
+if(JSON.stringify(u.sort())===JSON.stringify(c.sort())){
 score++;
 }
 }
 
-alert("Wynik końcowy: "+score+"/40");
+alert(`Wynik końcowy: ${score}/${questions.length}`);
 }
 
-function updateUI(){
-document.getElementById("progressText").innerText = (current+1)+"/40";
-document.getElementById("bar").style.width = ((current+1)/40*100)+"%";
-
-let s=0;
-for(let i=0;i<40;i++){
-let u=user[i]||[];
-if(JSON.stringify(u.sort())===JSON.stringify(answers[i+1].sort())){
-s++;
-}
-}
-document.getElementById("score").innerText = "Wynik: "+s+"/40";
-}
-
+// INIT
 render();
 
 </script>
