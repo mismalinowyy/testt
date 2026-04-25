@@ -41,6 +41,7 @@ button{margin:5px;padding:10px 14px;border:none;border-radius:10px;background:#3
 <button onclick="next()">➡</button>
 <button onclick="check()">Sprawdź</button>
 <button onclick="finish()">Zakończ</button>
+ <button onclick="startExam()" class="secondary">Tryb egzamin</button>
 </div>
 
 <div style="text-align:center;margin-top:10px;">
@@ -395,8 +396,38 @@ const answers = {
 37:["a","d"],38:["a","b"],39:["a","b","c"],40:["b","d"]
 };
 
+// ===== STAN =====
+let mode="learn";
+let current=0;
+let user={};
+let mistakes=[];
+let activeSet=[...Array(40).keys()];
+let checkedMap={};
+
+// ===== LOSOWANIE =====
+function shuffle(array){
+for(let i=array.length-1;i>0;i--){
+let j=Math.floor(Math.random()*(i+1));
+[array[i],array[j]]=[array[j],array[i]];
+}
+return array;
+}
+
+// ===== START EGZAMIN =====
+function startExam(){
+mode="exam";
+current=0;
+user={};
+mistakes=[];
+checkedMap={};
+
+activeSet = shuffle([...Array(40).keys()]);
+
+render();
+}
+
+// ===== RENDER =====
 function render(){
-checked=false;
 let idx=activeSet[current];
 let q=questions[idx];
 
@@ -409,9 +440,23 @@ html+=`<div class="option ${active}" onclick="toggle(${i})">${opt}</div>`;
 });
 
 document.getElementById("card").innerHTML=html;
+
+// 👉 jeśli już sprawdzone — pokaż wynik ponownie
+if(checkedMap[idx]){
+let correct=answers[idx+1];
+let chosen=user[idx]||[];
+
+document.querySelectorAll(".option").forEach((el,i)=>{
+let l=["a","b","c","d"][i];
+if(correct.includes(l)) el.classList.add("correct");
+if(chosen.includes(l)&&!correct.includes(l)) el.classList.add("wrong");
+});
+}
+
 updateUI();
 }
 
+// ===== WYBÓR ODPOWIEDZI =====
 function toggle(i){
 let idx=activeSet[current];
 let letter=["a","b","c","d"][i];
@@ -427,11 +472,13 @@ user[idx].push(letter);
 render();
 }
 
+// ===== SPRAWDŹ =====
 function check(){
 if(mode!=="learn") return;
-checked=true;
 
 let idx=activeSet[current];
+checkedMap[idx]=true;
+
 let correct=answers[idx+1];
 let chosen=user[idx]||[];
 
@@ -442,39 +489,67 @@ if(chosen.includes(l)&&!correct.includes(l)) el.classList.add("wrong");
 });
 }
 
+// ===== NEXT =====
 function next(){
-if(mode==="learn"&&!checked){alert("Najpierw kliknij SPRAWDŹ");return;}
-if(current<activeSet.length-1){current++;render();}
+let idx=activeSet[current];
+
+if(mode==="learn" && !checkedMap[idx]){
+alert("Najpierw kliknij SPRAWDŹ");
+return;
 }
 
-function prev(){ if(current>0){current--;render();} }
+if(current<activeSet.length-1){
+current++;
+render();
+}
+}
 
+// ===== PREV =====
+function prev(){
+if(current>0){
+current--;
+render();
+}
+}
+
+// ===== WYNIK =====
 function finish(){
 let score=0;
 mistakes=[];
+
 activeSet.forEach(idx=>{
 let u=user[idx]||[];
-if(JSON.stringify(u.sort())===JSON.stringify(answers[idx+1].sort())) score++;
-else mistakes.push(idx);
+
+if(JSON.stringify(u.sort())===JSON.stringify(answers[idx+1].sort())){
+score++;
+}else{
+mistakes.push(idx);
+}
 });
+
 alert("Wynik: "+score+"/"+activeSet.length);
 }
 
+// ===== POWTÓRKA BŁĘDÓW =====
 function repeatMistakes(){
-if(mistakes.length===0){alert("Brak błędów");return;}
+if(mistakes.length===0){
+alert("Brak błędów");
+return;
+}
+
 activeSet=[...mistakes];
 current=0;
 mode="learn";
+checkedMap={};
+
 render();
 }
 
+// ===== UI =====
 function updateUI(){
 document.getElementById("progressText").innerText=(current+1)+"/"+activeSet.length;
 document.getElementById("bar").style.width=((current+1)/activeSet.length*100)+"%";
 }
 
+// ===== START =====
 render();
-
-</script>
-</body>
-</html>
