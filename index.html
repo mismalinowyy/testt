@@ -44,12 +44,20 @@ button{margin:5px;padding:10px 14px;border:none;border-radius:10px;background:#3
 </div>
 
 <div style="text-align:center;margin-top:10px;">
-<button onclick="mode='learn'" class="secondary">Tryb nauki</button>
 <button onclick="startLearn()" class="secondary">Tryb nauki</button>
 <button onclick="startExam()" class="secondary">Tryb egzamin</button>
 <button onclick="repeatMistakes()" class="secondary">Powtórz błędy</button>
 </div>
 
+</div>
+
+<script>
+// ===== DANE =====
+const questions = Array.from({length:40}, (_,i)=>({
+  q:`Pytanie ${i+1}: Co oznacza opcja ${i+1}?`,
+  a:["Odpowiedź A","Odpowiedź B","Odpowiedź C","Odpowiedź D"],
+  correct: Math.floor(Math.random()*4)
+}));
 
 // ===== STAN =====
 let mode="learn";
@@ -57,49 +65,125 @@ let current=0;
 let user={};
 let mistakes=[];
 let activeSet=[...Array(40).keys()];
-let checkedMap={};
+let checked={};
 
-// ===== LOSOWANIE =====
-function shuffle(array){
-for(let i=array.length-1;i>0;i--){
-let j=Math.floor(Math.random()*(i+1));
-[array[i],array[j]]=[array[j],array[i]];
-}
-return array;
-}
-
-// ===== START TRYB NAUKI =====
+// ===== STARTY =====
 function startLearn(){
 mode="learn";
 current=0;
 user={};
 mistakes=[];
-checkedMap={};
+checked={};
 activeSet=[...Array(40).keys()];
 render();
 }
 
-// ===== START EGZAMIN =====
 function startExam(){
 mode="exam";
 current=0;
 user={};
 mistakes=[];
-checkedMap={};
+checked={};
 activeSet = shuffle([...Array(40).keys()]);
 render();
 }
-</div>
 
-<script>
+function repeatMistakes(){
+if(mistakes.length===0) return alert("Brak błędów");
+mode="learn";
+activeSet=[...mistakes];
+current=0;
+render();
+}
 
-let mode="learn";
-let current=0;
-let user={};
-let mistakes=[];
-let activeSet=[...Array(40).keys()];
+// ===== SHUFFLE =====
+function shuffle(arr){
+for(let i=arr.length-1;i>0;i--){
+let j=Math.floor(Math.random()*(i+1));
+[arr[i],arr[j]]=[arr[j],arr[i]];
+}
+return arr;
+}
 
-const questions = [
+// ===== RENDER =====
+function render(){
+const q = questions[activeSet[current]];
+let html=`<h3>${q.q}</h3>`;
+
+q.a.forEach((ans,i)=>{
+let cls="option";
+if(user[current]===i) cls+=" active";
+if(checked[current]!==undefined){
+if(i===q.correct) cls+=" correct";
+else if(user[current]===i && i!==q.correct) cls+=" wrong";
+}
+
+html+=`<div class="${cls}" onclick="select(${i})">${ans}</div>`;
+});
+
+document.getElementById("card").innerHTML=html;
+
+document.getElementById("progressText").innerText=
+`${current+1} / ${activeSet.length}`;
+
+document.getElementById("bar").style.width=
+((current+1)/activeSet.length*100)+"%";
+
+document.getElementById("score").innerText=
+`Błędy: ${mistakes.length}`;
+}
+
+// ===== SELECT =====
+function select(i){
+user[current]=i;
+render();
+}
+
+// ===== NAWIGACJA =====
+function next(){
+if(current<activeSet.length-1){
+current++;
+render();
+}
+}
+
+function prev(){
+if(current>0){
+current--;
+render();
+}
+}
+
+// ===== CHECK =====
+function check(){
+const q = questions[activeSet[current]];
+checked[current]=true;
+
+if(user[current]!==q.correct){
+if(!mistakes.includes(activeSet[current])){
+mistakes.push(activeSet[current]);
+}
+}
+render();
+}
+
+// ===== FINISH =====
+function finish(){
+let score=0;
+
+activeSet.forEach((id,idx)=>{
+if(user[idx]===questions[id].correct) score++;
+});
+
+alert(`Twój wynik: ${score}/${activeSet.length}`);
+}
+
+// start
+startLearn();
+</script>
+
+</body>
+</html>
 
 {q:`1. Do metod kontroli bezpieczeństwa bagażu rejestrowanego zgodnie z Rozp. 2015/1998 zaliczamy:`,
 a:[
