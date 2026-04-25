@@ -1,82 +1,28 @@
 # siema siema tu londyn
-<!DOCTYPE html>
-<html lang="pl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Quiz 40 pytań</title>
-
-<style>
-body{margin:0;font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0f172a;color:#fff;display:flex;justify-content:center}
-.app{max-width:800px;width:100%;padding:20px}
-.card{background:#1e293b;border-radius:16px;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
-h3{margin-top:0}
-.option{background:#334155;margin:8px 0;padding:12px;border-radius:12px;cursor:pointer;transition:.15s}
-.option:hover{background:#475569}
-.option.active{outline:2px solid #3b82f6}
-.option.correct{background:#16a34a!important}
-.option.wrong{background:#dc2626!important}
-.top{display:flex;justify-content:space-between;margin-bottom:10px;font-size:14px}
-.progress{height:8px;background:#334155;border-radius:10px;margin-bottom:10px}
-.bar{height:100%;background:#3b82f6;border-radius:10px;width:0%}
-button{margin:5px;padding:10px 14px;border:none;border-radius:10px;background:#3b82f6;color:#fff;cursor:pointer}
-.secondary{background:#475569}
-</style>
-</head>
-
-<body>
-<div class="app">
-
-<div class="top">
-<div id="progressText"></div>
-<div id="score"></div>
-</div>
-
-<div class="progress"><div class="bar" id="bar"></div></div>
-
-<div class="card" id="card"></div>
-
-<div style="text-align:center">
-<button onclick="prev()">⬅</button>
-<button onclick="next()">➡</button>
-<button onclick="check()">Sprawdź</button>
-<button onclick="finish()">Zakończ</button>
-</div>
-
-<div style="text-align:center;margin-top:10px;">
-<button onclick="startLearn()" class="secondary">Tryb nauki</button>
-<button onclick="startExam()" class="secondary">Tryb egzamin</button>
-<button onclick="repeatMistakes()" class="secondary">Powtórz błędy</button>
-</div>
-
-</div>
-
-<script>
-
-// ===== PYTANIA (DEMO 40) =====
-const questions = Array.from({length:40}, (_,i)=>({
-  q:`Pytanie ${i+1}: Co oznacza opcja ${i+1}?`,
-  a:["Odpowiedź A","Odpowiedź B","Odpowiedź C","Odpowiedź D"],
-  correct: Math.floor(Math.random()*4)
-}));
+function shuffle(array){
+for(let i=array.length-1;i>0;i--){
+let j=Math.floor(Math.random()*(i+1));
+[array[i],array[j]]=[array[j],array[i]];
+}
+return array;
+}
 
 // ===== STAN =====
 let mode="learn";
 let current=0;
-let user={};        // user[id] = odpowiedź
+let user={};        // user[idx] = ["a","c"]
 let mistakes=[];
 let activeSet=[...Array(40).keys()];
-let checked={};
+let checkedMap={};
 
-// ===== START TRYB NAUKI =====
-function startLearn(){
-mode="learn";
-current=0;
-user={};
-mistakes=[];
-checked={};
-activeSet=[...Array(40).keys()];
-render();
+// ===== POPRAWNE SPRAWDZANIE =====
+function isCorrect(idx){
+let chosen = user[idx] || [];
+let correct = answers[idx] || [];
+
+if(chosen.length !== correct.length) return false;
+
+return correct.every(x => chosen.includes(x));
 }
 
 // ===== START EGZAMIN =====
@@ -85,125 +31,23 @@ mode="exam";
 current=0;
 user={};
 mistakes=[];
-checked={};
+checkedMap={};
+
 activeSet = shuffle([...Array(40).keys()]);
+
 render();
 }
 
-// ===== POWTÓRKA BŁĘDÓW =====
-function repeatMistakes(){
-if(mistakes.length===0){
-alert("Brak błędów");
-return;
-}
+// ===== START NAUKA =====
+function startLearn(){
 mode="learn";
 current=0;
 user={};
-checked={};
-activeSet=[...mistakes];
 mistakes=[];
+checkedMap={};
+activeSet=[...Array(40).keys()];
 render();
 }
-
-// ===== SHUFFLE =====
-function shuffle(arr){
-for(let i=arr.length-1;i>0;i--){
-let j=Math.floor(Math.random()*(i+1));
-[arr[i],arr[j]]=[arr[j],arr[i]];
-}
-return arr;
-}
-
-// ===== RENDER =====
-function render(){
-const id = activeSet[current];
-const q = questions[id];
-
-let html=`<h3>${q.q}</h3>`;
-
-q.a.forEach((ans,i)=>{
-let cls="option";
-
-if(user[id]===i) cls+=" active";
-
-if(checked[id]!==undefined){
-if(i===q.correct) cls+=" correct";
-else if(user[id]===i && i!==q.correct) cls+=" wrong";
-}
-
-html+=`<div class="${cls}" onclick="select(${i})">${ans}</div>`;
-});
-
-document.getElementById("card").innerHTML=html;
-
-document.getElementById("progressText").innerText=
-`${current+1} / ${activeSet.length}`;
-
-document.getElementById("bar").style.width=
-((current+1)/activeSet.length*100)+"%";
-
-let correctCount=0;
-activeSet.forEach(id=>{
-if(user[id]===questions[id].correct) correctCount++;
-});
-
-document.getElementById("score").innerText=
-`Wynik: ${correctCount}/${activeSet.length}`;
-}
-
-// ===== WYBÓR ODPOWIEDZI =====
-function select(i){
-user[activeSet[current]]=i;
-render();
-}
-
-// ===== NAWIGACJA =====
-function next(){
-if(current<activeSet.length-1){
-current++;
-render();
-}
-}
-
-function prev(){
-if(current>0){
-current--;
-render();
-}
-}
-
-// ===== SPRAWDŹ =====
-function check(){
-const id = activeSet[current];
-const q = questions[id];
-
-checked[id]=true;
-
-if(user[id]!==q.correct){
-if(!mistakes.includes(id)){
-mistakes.push(id);
-}
-}
-
-render();
-}
-
-// ===== WYNIK KOŃCOWY =====
-function finish(){
-let score=0;
-
-activeSet.forEach(id=>{
-if(user[id]===questions[id].correct) score++;
-});
-
-alert(`Twój wynik: ${score}/${activeSet.length}`);
-}
-
-render();
-
-</script>
-</body>
-</html>
 {q:`1. Do metod kontroli bezpieczeństwa bagażu rejestrowanego zgodnie z Rozp. 2015/1998 zaliczamy:`,
 a:[
 "a) systemy wykrywania urządzeń wybuchowych",
@@ -537,37 +381,6 @@ const answers = {
 37:["a","d"],38:["a","b"],39:["a","b","c"],40:["b","d"]
 };
 
-// ===== STAN =====
-let mode="learn";
-let current=0;
-let user={};
-let mistakes=[];
-let activeSet=[...Array(40).keys()];
-let checkedMap={};
-
-// ===== LOSOWANIE =====
-function shuffle(array){
-for(let i=array.length-1;i>0;i--){
-let j=Math.floor(Math.random()*(i+1));
-[array[i],array[j]]=[array[j],array[i]];
-}
-return array;
-}
-
-// ===== START EGZAMIN =====
-function startExam(){
-mode="exam";
-current=0;
-user={};
-mistakes=[];
-checkedMap={};
-
-activeSet = shuffle([...Array(40).keys()]);
-
-render();
-}
-
-// ===== RENDER =====
 function render(){
 let idx=activeSet[current];
 let q=questions[idx];
@@ -576,19 +389,22 @@ let html="<h3>"+q.q+"</h3>";
 
 q.a.forEach((opt,i)=>{
 let letter=["a","b","c","d"][i];
+
 let active=user[idx]?.includes(letter)?"active":"";
+
 html+=`<div class="option ${active}" onclick="toggle(${i})">${opt}</div>`;
 });
 
 document.getElementById("card").innerHTML=html;
 
-// 👉 jeśli już sprawdzone — pokaż wynik ponownie
+// ===== pokaz wyników jeśli sprawdzone =====
 if(checkedMap[idx]){
-let correct=answers[idx+1];
+let correct=answers[idx];
 let chosen=user[idx]||[];
 
 document.querySelectorAll(".option").forEach((el,i)=>{
 let l=["a","b","c","d"][i];
+
 if(correct.includes(l)) el.classList.add("correct");
 if(chosen.includes(l)&&!correct.includes(l)) el.classList.add("wrong");
 });
@@ -597,7 +413,7 @@ if(chosen.includes(l)&&!correct.includes(l)) el.classList.add("wrong");
 updateUI();
 }
 
-// ===== WYBÓR ODPOWIEDZI =====
+// ===== WYBÓR =====
 function toggle(i){
 let idx=activeSet[current];
 let letter=["a","b","c","d"][i];
@@ -620,17 +436,10 @@ if(mode!=="learn") return;
 let idx=activeSet[current];
 checkedMap[idx]=true;
 
-let correct=answers[idx+1];
-let chosen=user[idx]||[];
-
-document.querySelectorAll(".option").forEach((el,i)=>{
-let l=["a","b","c","d"][i];
-if(correct.includes(l)) el.classList.add("correct");
-if(chosen.includes(l)&&!correct.includes(l)) el.classList.add("wrong");
-});
+render();
 }
 
-// ===== NEXT =====
+// ===== NAWIGACJA =====
 function next(){
 let idx=activeSet[current];
 
@@ -645,7 +454,6 @@ render();
 }
 }
 
-// ===== PREV =====
 function prev(){
 if(current>0){
 current--;
@@ -659,9 +467,7 @@ let score=0;
 mistakes=[];
 
 activeSet.forEach(idx=>{
-let u=user[idx]||[];
-
-if(JSON.stringify(u.sort())===JSON.stringify(answers[idx+1].sort())){
+if(isCorrect(idx)){
 score++;
 }else{
 mistakes.push(idx);
@@ -671,7 +477,7 @@ mistakes.push(idx);
 alert("Wynik: "+score+"/"+activeSet.length);
 }
 
-// ===== POWTÓRKA BŁĘDÓW =====
+// ===== POWTÓRKA =====
 function repeatMistakes(){
 if(mistakes.length===0){
 alert("Brak błędów");
@@ -691,6 +497,3 @@ function updateUI(){
 document.getElementById("progressText").innerText=(current+1)+"/"+activeSet.length;
 document.getElementById("bar").style.width=((current+1)/activeSet.length*100)+"%";
 }
-
-// ===== START =====
-render();
