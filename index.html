@@ -160,6 +160,7 @@ let html = `<h3>${q.q}</h3>`;
 q.a.forEach((opt,i)=>{
 let l=["a","b","c","d"][i];
 let active = (user[current] || []).includes(letter) ? "active" : "";
+  
 html += `<div class="option ${active}" onclick="toggle('${letter}')">${opt}</div>`;
 });
 
