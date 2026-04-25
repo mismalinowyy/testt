@@ -52,7 +52,8 @@ button{margin:5px;padding:10px 14px;border:none;border-radius:10px;background:#3
 </div>
 
 <script>
-// ===== DANE =====
+
+// ===== PYTANIA (DEMO 40) =====
 const questions = Array.from({length:40}, (_,i)=>({
   q:`Pytanie ${i+1}: Co oznacza opcja ${i+1}?`,
   a:["Odpowiedź A","Odpowiedź B","Odpowiedź C","Odpowiedź D"],
@@ -62,12 +63,12 @@ const questions = Array.from({length:40}, (_,i)=>({
 // ===== STAN =====
 let mode="learn";
 let current=0;
-let user={};
+let user={};        // user[id] = odpowiedź
 let mistakes=[];
 let activeSet=[...Array(40).keys()];
 let checked={};
 
-// ===== STARTY =====
+// ===== START TRYB NAUKI =====
 function startLearn(){
 mode="learn";
 current=0;
@@ -78,6 +79,7 @@ activeSet=[...Array(40).keys()];
 render();
 }
 
+// ===== START EGZAMIN =====
 function startExam(){
 mode="exam";
 current=0;
@@ -88,11 +90,18 @@ activeSet = shuffle([...Array(40).keys()]);
 render();
 }
 
+// ===== POWTÓRKA BŁĘDÓW =====
 function repeatMistakes(){
-if(mistakes.length===0) return alert("Brak błędów");
+if(mistakes.length===0){
+alert("Brak błędów");
+return;
+}
 mode="learn";
-activeSet=[...mistakes];
 current=0;
+user={};
+checked={};
+activeSet=[...mistakes];
+mistakes=[];
 render();
 }
 
@@ -107,15 +116,19 @@ return arr;
 
 // ===== RENDER =====
 function render(){
-const q = questions[activeSet[current]];
+const id = activeSet[current];
+const q = questions[id];
+
 let html=`<h3>${q.q}</h3>`;
 
 q.a.forEach((ans,i)=>{
 let cls="option";
-if(user[current]===i) cls+=" active";
-if(checked[current]!==undefined){
+
+if(user[id]===i) cls+=" active";
+
+if(checked[id]!==undefined){
 if(i===q.correct) cls+=" correct";
-else if(user[current]===i && i!==q.correct) cls+=" wrong";
+else if(user[id]===i && i!==q.correct) cls+=" wrong";
 }
 
 html+=`<div class="${cls}" onclick="select(${i})">${ans}</div>`;
@@ -129,13 +142,18 @@ document.getElementById("progressText").innerText=
 document.getElementById("bar").style.width=
 ((current+1)/activeSet.length*100)+"%";
 
+let correctCount=0;
+activeSet.forEach(id=>{
+if(user[id]===questions[id].correct) correctCount++;
+});
+
 document.getElementById("score").innerText=
-`Błędy: ${mistakes.length}`;
+`Wynik: ${correctCount}/${activeSet.length}`;
 }
 
-// ===== SELECT =====
+// ===== WYBÓR ODPOWIEDZI =====
 function select(i){
-user[current]=i;
+user[activeSet[current]]=i;
 render();
 }
 
@@ -154,37 +172,38 @@ render();
 }
 }
 
-// ===== CHECK =====
+// ===== SPRAWDŹ =====
 function check(){
-const q = questions[activeSet[current]];
-checked[current]=true;
+const id = activeSet[current];
+const q = questions[id];
 
-if(user[current]!==q.correct){
-if(!mistakes.includes(activeSet[current])){
-mistakes.push(activeSet[current]);
+checked[id]=true;
+
+if(user[id]!==q.correct){
+if(!mistakes.includes(id)){
+mistakes.push(id);
 }
 }
+
 render();
 }
 
-// ===== FINISH =====
+// ===== WYNIK KOŃCOWY =====
 function finish(){
 let score=0;
 
-activeSet.forEach((id,idx)=>{
-if(user[idx]===questions[id].correct) score++;
+activeSet.forEach(id=>{
+if(user[id]===questions[id].correct) score++;
 });
 
 alert(`Twój wynik: ${score}/${activeSet.length}`);
 }
 
-// start
-startLearn();
-</script>
+render();
 
+</script>
 </body>
 </html>
-
 {q:`1. Do metod kontroli bezpieczeństwa bagażu rejestrowanego zgodnie z Rozp. 2015/1998 zaliczamy:`,
 a:[
 "a) systemy wykrywania urządzeń wybuchowych",
