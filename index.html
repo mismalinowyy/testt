@@ -14,6 +14,10 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,sans-serif;background
 .option:hover{background:#475569}
 .option.correct{background:#16a34a!important}
 .option.wrong{background:#dc2626!important}
+.option.active{
+  outline:2px solid #3b82f6;
+  background:#475569;
+}
 
 .top{display:flex;justify-content:space-between;margin-bottom:10px}
 .progress{height:8px;background:#334155;border-radius:10px}
@@ -155,7 +159,8 @@ let html = `<h3>${q.q}</h3>`;
 
 q.a.forEach((opt,i)=>{
 let l=["a","b","c","d"][i];
-html += `<div class="option" onclick="toggle('${l}')">${opt}</div>`;
+let active = (user[current] || []).includes(letter) ? "active" : "";
+html += `<div class="option ${active}" onclick="toggle('${letter}')">${opt}</div>`;
 });
 
 document.getElementById("card").innerHTML = html;
